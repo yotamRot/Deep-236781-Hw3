@@ -23,7 +23,10 @@ def char_maps(text: str):
     #  It's best if you also sort the chars before assigning indices, so that
     #  they're in lexical order.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    char_list = list(set(text))
+    sorted_char_list = sorted(char_list)
+    idx_to_char = {i: sorted_char_list[i] for i in range(0, len(sorted_char_list))}
+    char_to_idx = {sorted_char_list[i]: i for i in range(0, len(sorted_char_list))}
     # ========================
     return char_to_idx, idx_to_char
 
@@ -39,7 +42,12 @@ def remove_chars(text: str, chars_to_remove):
     """
     # TODO: Implement according to the docstring.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    initial_len = len(text)
+    text_clean = text
+    for char in chars_to_remove:
+        text_clean = text_clean.replace(char, '')
+    final_len = len(text_clean)
+    n_removed = initial_len - final_len
     # ========================
     return text_clean, n_removed
 
@@ -59,7 +67,11 @@ def chars_to_onehot(text: str, char_to_idx: dict) -> Tensor:
     """
     # TODO: Implement the embedding.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    result = torch.zeros(len(text), len(char_to_idx), dtype=torch.int8)
+    for i, char in enumerate(text):
+        idx = char_to_idx[char]
+        result[i, idx] = 1
+
     # ========================
     return result
 
@@ -76,7 +88,10 @@ def onehot_to_chars(embedded_text: Tensor, idx_to_char: dict) -> str:
     """
     # TODO: Implement the reverse-embedding.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    idx = torch.argmax(embedded_text, dim=1).tolist()
+    result = ""
+    for i in idx:
+        result += idx_to_char[i]
     # ========================
     return result
 
@@ -105,7 +120,12 @@ def chars_to_labelled_samples(text: str, char_to_idx: dict, seq_len: int, device
     #  3. Create the labels tensor in a similar way and convert to indices.
     #  Note that no explicit loops are required to implement this function.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    text_without_last = text[:-1]
+    num_samples = (len(text_without_last)) // seq_len
+    labels_text = chars_to_onehot(text[1:], char_to_idx)
+    samples_text = chars_to_onehot(text_without_last, char_to_idx)
+    samples = samples_text.view((num_samples, seq_len, -1)).to(device)
+    labels = labels_text.view((num_samples, -1)).to(device)
     # ========================
     return samples, labels
 
