@@ -147,7 +147,8 @@ def hot_softmax(y, dim=0, temperature=1.0):
     """
     # TODO: Implement based on the above.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    y_scaled = y / temperature
+    result = torch.softmax(y_scaled, dim=dim)
     # ========================
     return result
 
@@ -183,7 +184,10 @@ def generate_from_model(model, start_sequence, n_chars, char_maps, T):
     #  necessary for this. Best to disable tracking for speed.
     #  See torch.no_grad().
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    with torch.no_grad():
+        for _ in range(n_chars):
+            out = model(out_text)
+
     # ========================
 
     return out_text
@@ -270,22 +274,26 @@ class MultilayerGRU(nn.Module):
         dropout_layer = nn.Dropout(dropout)
         layers = range(n_layers)
         for layer_idx in layers:
-            W_x = nn.Linear(cur_in_dim, self.h_dim, bias=False)
-            W_h = nn.Linear(self.h_dim, self.h_dim, bias=True)
+            W_xz = nn.Linear(cur_in_dim, self.h_dim, bias=False)
+            W_xr =  nn.Linear(cur_in_dim, self.h_dim, bias=False)
+            W_xg = nn.Linear(cur_in_dim, self.h_dim, bias=False)
+            W_hz = nn.Linear(self.h_dim, self.h_dim, bias=True)
+            W_hr = nn.Linear(self.h_dim, self.h_dim, bias=True)
+            W_hg = nn.Linear(self.h_dim, self.h_dim, bias=True)
 
-            self.add_module(f'Layer_{layer_idx} W_xz:', W_x)
-            self.add_module(f'Layer_{layer_idx} W_hz:', W_h)
-            self.add_module(f'Layer_{layer_idx} W_xr:', W_x)
-            self.add_module(f'Layer_{layer_idx} W_hr:', W_h)
-            self.add_module(f'Layer_{layer_idx} W_xg:', W_x)
-            self.add_module(f'Layer_{layer_idx} W_hg:', W_h)
+            self.add_module(f'Layer_{layer_idx} W_xz:', W_xz)
+            self.add_module(f'Layer_{layer_idx} W_hz:', W_hz)
+            self.add_module(f'Layer_{layer_idx} W_xr:', W_xr)
+            self.add_module(f'Layer_{layer_idx} W_hr:', W_hr)
+            self.add_module(f'Layer_{layer_idx} W_xg:', W_xg)
+            self.add_module(f'Layer_{layer_idx} W_hg:', W_hg)
 
-            self.layer_params.append(W_x)
-            self.layer_params.append(W_h)
-            self.layer_params.append(W_x)
-            self.layer_params.append(W_h)
-            self.layer_params.append(W_x)
-            self.layer_params.append(W_h)
+            self.layer_params.append(W_xz)
+            self.layer_params.append(W_hz)
+            self.layer_params.append(W_xr)
+            self.layer_params.append(W_hr)
+            self.layer_params.append(W_xg)
+            self.layer_params.append(W_hg)
 
             self.add_module(f'Layer_{layer_idx} dropout:', dropout_layer)
             self.layer_params.append(dropout_layer)
@@ -294,8 +302,6 @@ class MultilayerGRU(nn.Module):
 
         self.W_hy = nn.Linear(self.h_dim, self.out_dim, bias=True)
         self.add_module(f'Layer_{n_layers} W_hy:', self.W_hy)
-        self.layer_params.append(self.W_hy)
-
         # ========================
 
     def forward(self, input: Tensor, hidden_state: Tensor = None):
@@ -339,7 +345,8 @@ class MultilayerGRU(nn.Module):
         for t in range(seq_len):
             Xt = input[:, t, :]
             index = 0
-            for _, ((W_xz, W_hz, W_xr, W_hr, W_xg, W_hg, dropout)) in enumerate(self.layer_params):
+            for i in range(0, len(self.layer_params), 7):
+                W_xz, W_hz, W_xr, W_hr, W_xg, W_hg, dropout = tuple(self.layer_params[i:i + 7])
                 h_prv = layer_states[index]
                 z = sig(W_xz(Xt) + W_hz(h_prv))
                 r = sig(W_xr(Xt) + W_hr(h_prv))
@@ -348,9 +355,9 @@ class MultilayerGRU(nn.Module):
                 Xt = dropout(h_cur)
                 layer_states[index] = h_cur
                 index = index + 1
-            out += self.W_hy(Xt)
+            out.append(self.W_hy(Xt))
 
-        hidden_state = torch.stack(layer_states, dim=1)
         layer_output = torch.stack(out, dim=1)
+        hidden_state = torch.stack(layer_states, dim=1)
         # ========================
         return layer_output, hidden_state
