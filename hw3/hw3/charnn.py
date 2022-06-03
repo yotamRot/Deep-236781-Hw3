@@ -120,12 +120,18 @@ def chars_to_labelled_samples(text: str, char_to_idx: dict, seq_len: int, device
     #  3. Create the labels tensor in a similar way and convert to indices.
     #  Note that no explicit loops are required to implement this function.
     # ====== YOUR CODE: ======
-    text_without_last = text[:-1]
-    num_samples = (len(text_without_last)) // seq_len
-    labels_text = chars_to_onehot(text[1:], char_to_idx)
-    samples_text = chars_to_onehot(text_without_last, char_to_idx)
+    num_samples = (len(text)) // seq_len
+    res = len(text) % seq_len
+    if res == 0:
+        end = len(text) - seq_len
+    else:
+        end = len(text) - res
+
+    samples_text = chars_to_onehot(text[:end], char_to_idx).to(device)
     samples = samples_text.view((num_samples, seq_len, -1)).to(device)
-    labels = labels_text.view((num_samples, -1)).to(device)
+
+    labels_text = chars_to_onehot(text[1:end+1], char_to_idx).to(device)
+    labels = labels_text.argmax(dim=1).view((num_samples, -1)).to(device)
     # ========================
     return samples, labels
 
@@ -210,7 +216,15 @@ class SequenceBatchSampler(torch.utils.data.Sampler):
         #  you can drop it.
         idx = None  # idx should be a 1-d list of indices.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        num_of_batches = len(self.dataset) // self.batch_size
+        idx = [range(i * self.batch_size, (i+1) * self.batch_size) for i in range(num_of_batches)]
+        print(idx)
+        idx = [item for sublist in idx for item in sublist]
+        print(idx)
+        # 1 2 3 4 5 6 7 8
+        #
+        # 12   34
+        # 56   78
         # ========================
         return iter(idx)
 
