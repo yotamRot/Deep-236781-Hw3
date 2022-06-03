@@ -185,9 +185,20 @@ def generate_from_model(model, start_sequence, n_chars, char_maps, T):
     #  See torch.no_grad().
     # ====== YOUR CODE: ======
     with torch.no_grad():
-        for _ in range(n_chars):
-            out = model(out_text)
+        hidden_state = None
+        sequence = start_sequence
+        for _ in range(n_chars - len(start_sequence)):
+            one_hot = chars_to_onehot(sequence, char_to_idx=char_to_idx).type(torch.float)
+            model_input = torch.unsqueeze(one_hot, 0).to(device)
 
+            layer_output, hidden_state = model(model_input, hidden_state)
+            # the new char is in the first batch and in the end of the sequence
+            new_char_scores = layer_output[0, -1, :]
+            idx = torch.multinomial(hot_softmax(new_char_scores, temperature=T), 1)
+            predict_char = idx_to_char[idx.item()]
+            # add predict_char to the output text
+            out_text += predict_char
+            sequence = predict_char
     # ========================
 
     return out_text
