@@ -130,7 +130,7 @@ def chars_to_labelled_samples(text: str, char_to_idx: dict, seq_len: int, device
     samples_text = chars_to_onehot(text[:end], char_to_idx).to(device)
     samples = samples_text.view((num_samples, seq_len, -1)).to(device)
 
-    labels_text = chars_to_onehot(text[1:end+1], char_to_idx).to(device)
+    labels_text = chars_to_onehot(text[1:end + 1], char_to_idx).to(device)
     labels = labels_text.argmax(dim=1).view((num_samples, -1)).to(device)
     # ========================
     return samples, labels
@@ -216,15 +216,10 @@ class SequenceBatchSampler(torch.utils.data.Sampler):
         #  you can drop it.
         idx = None  # idx should be a 1-d list of indices.
         # ====== YOUR CODE: ======
-        num_of_batches = len(self.dataset) // self.batch_size
-        idx = [range(i * self.batch_size, (i+1) * self.batch_size) for i in range(num_of_batches)]
-        print(idx)
-        idx = [item for sublist in idx for item in sublist]
-        print(idx)
-        # 1 2 3 4 5 6 7 8
-        #
-        # 12   34
-        # 56   78
+        num_batches = len(self.dataset) // self.batch_size
+        idx = range(num_batches * self.batch_size)
+        # arrange by num of batches jump - sort first by modulu then by value
+        idx = sorted(idx, key=lambda x: (x % num_batches, x), reverse=False)
         # ========================
         return iter(idx)
 
@@ -271,7 +266,36 @@ class MultilayerGRU(nn.Module):
         #      then call self.register_parameter() on them. Also make
         #      sure to initialize them. See functions in torch.nn.init.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        cur_in_dim = self.in_dim
+        dropout_layer = nn.Dropout(dropout)
+        layers = range(n_layers)
+        for layer_idx in layers:
+            W_x = nn.Linear(cur_in_dim, self.h_dim, bias=False)
+            W_h = nn.Linear(self.h_dim, self.h_dim, bias=True)
+
+            self.add_module(f'Layer_{layer_idx} W_xz:', W_x)
+            self.add_module(f'Layer_{layer_idx} W_hz:', W_h)
+            self.add_module(f'Layer_{layer_idx} W_xr:', W_x)
+            self.add_module(f'Layer_{layer_idx} W_hr:', W_h)
+            self.add_module(f'Layer_{layer_idx} W_xg:', W_x)
+            self.add_module(f'Layer_{layer_idx} W_hg:', W_h)
+
+            self.layer_params.append(W_x)
+            self.layer_params.append(W_h)
+            self.layer_params.append(W_x)
+            self.layer_params.append(W_h)
+            self.layer_params.append(W_x)
+            self.layer_params.append(W_h)
+
+            self.add_module(f'Layer_{layer_idx} dropout:', dropout_layer)
+            self.layer_params.append(dropout_layer)
+            # for all iters but first
+            cur_in_dim = self.h_dim
+
+        self.W_hy = nn.Linear(self.h_dim, self.out_dim, bias=True)
+        self.add_module(f'Layer_{n_layers} W_hy:', self.W_hy)
+        self.layer_params.append(self.W_hy)
+
         # ========================
 
     def forward(self, input: Tensor, hidden_state: Tensor = None):
@@ -309,6 +333,24 @@ class MultilayerGRU(nn.Module):
         #  Tip: You can use torch.stack() to combine multiple tensors into a
         #  single tensor in a differentiable manner.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        sig = torch.sigmoid
+        tanh = torch.tanh
+        out = []
+        for t in range(seq_len):
+            Xt = input[:, t, :]
+            index = 0
+            for _, ((W_xz, W_hz, W_xr, W_hr, W_xg, W_hg, dropout)) in enumerate(self.layer_params):
+                h_prv = layer_states[index]
+                z = sig(W_xz(Xt) + W_hz(h_prv))
+                r = sig(W_xr(Xt) + W_hr(h_prv))
+                g = tanh(W_xg(Xt) + W_hg(r * h_prv))
+                h_cur = z * h_prv + (1 - z) * g
+                Xt = dropout(h_cur)
+                layer_states[index] = h_cur
+                index = index + 1
+            out += self.W_hy(Xt)
+
+        hidden_state = torch.stack(layer_states, dim=1)
+        layer_output = torch.stack(out, dim=1)
         # ========================
         return layer_output, hidden_state
