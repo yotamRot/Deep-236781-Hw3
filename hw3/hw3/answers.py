@@ -22,7 +22,16 @@ def part1_rnn_hyperparams():
     )
     # TODO: Set the hyperparameters to train the model.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    hypers = dict(
+        batch_size=256,
+        seq_len=32,
+        h_dim=512,
+        n_layers=3,
+        dropout=0.4,
+        learn_rate=0.002,
+        lr_sched_factor=0.1,
+        lr_sched_patience=0.5,
+    )
     # ========================
     return hypers
 

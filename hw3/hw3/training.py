@@ -225,13 +225,16 @@ class Trainer(abc.ABC):
 class RNNTrainer(Trainer):
     def __init__(self, model, loss_fn, optimizer, device=None):
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        super().__init__(model, device)
+        self.loss_fn = loss_fn
+        self.optimizer = optimizer
+        self.hidden_state = None
         # ========================
 
     def train_epoch(self, dl_train: DataLoader, **kw):
         # TODO: Implement modifications to the base method, if needed.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.hidden_state = None
         # ========================
         return super().train_epoch(dl_train, **kw)
 
@@ -256,7 +259,20 @@ class RNNTrainer(Trainer):
         #  - Update params
         #  - Calculate number of correct char predictions
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # Forward pass
+        layer_output, self.hidden_state = self.model(x, self.hidden_state)  # layer_output.shape = (B, S, O)
+        self.optimizer.zero_grad()
+        # Calculate total loss over sequence
+        layer_output = torch.transpose(layer_output, 1, 2)  # layer_output.shape = (B, O, S)
+        loss = self.loss_fn(layer_output, y)
+        # Backward pass: truncated back-propagation through time
+        loss.backward()
+        # Update params
+        self.optimizer.step()
+        self.hidden_state = self.hidden_state.detach()
+        # Calculate number of correct char predictions
+        char_pred = torch.argmax(layer_output, dim=1)
+        num_correct = ((y == char_pred).sum())
         # ========================
 
         # Note: scaling num_correct by seq_len because each sample has seq_len
