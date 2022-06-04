@@ -82,7 +82,13 @@ class Trainer(abc.ABC):
             #  - Use the train/test_epoch methods.
             #  - Save losses and accuracies in the lists above.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            train_result = self.train_epoch(dl_train, verbose=verbose, **kw)
+            train_acc.append(train_result.accuracy)
+            train_loss.append((sum(train_result.losses) / len(train_result.losses)).item())
+
+            test_result = self.test_epoch(dl_test, verbose=verbose, **kw)
+            test_acc.append(test_result.accuracy)
+            test_loss.append((sum(test_result.losses) / len(test_result.losses)).item())
             # ========================
 
             # TODO:
@@ -93,11 +99,17 @@ class Trainer(abc.ABC):
             #    the checkpoints argument.
             if best_acc is None or test_result.accuracy > best_acc:
                 # ====== YOUR CODE: ======
-                raise NotImplementedError()
+                epochs_without_improvement = 0
+                best_acc = test_result.accuracy
+                if checkpoints is not None:
+                    self.save_checkpoint(checkpoints)
                 # ========================
             else:
                 # ====== YOUR CODE: ======
-                raise NotImplementedError()
+                epochs_without_improvement = epochs_without_improvement + 1
+                if early_stopping is not None:
+                    if early_stopping == epochs_without_improvement:
+                        break
                 # ========================
 
             if post_epoch_fn:
@@ -241,7 +253,7 @@ class RNNTrainer(Trainer):
     def test_epoch(self, dl_test: DataLoader, **kw):
         # TODO: Implement modifications to the base method, if needed.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.hidden_state = None
         # ========================
         return super().test_epoch(dl_test, **kw)
 
@@ -292,7 +304,15 @@ class RNNTrainer(Trainer):
             #  - Loss calculation
             #  - Calculate number of correct predictions
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            # Forward pass
+            layer_output, self.hidden_state = self.model(x, self.hidden_state)  # layer_output.shape = (B, S, O)
+            # Loss calculation
+            layer_output = torch.transpose(layer_output, 1, 2)  # layer_output.shape = (B, O, S)
+            loss = self.loss_fn(layer_output, y)
+
+            # Calculate number of correct predictions
+            char_pred = torch.argmax(layer_output, dim=1)
+            num_correct = ((y == char_pred).sum())
             # ========================
 
         return BatchResult(loss.item(), num_correct.item() / seq_len)
