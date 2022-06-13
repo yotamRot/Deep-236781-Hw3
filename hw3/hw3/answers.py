@@ -24,14 +24,13 @@ def part1_rnn_hyperparams():
     # ====== YOUR CODE: ======
     hypers = dict(
         batch_size=512,
-        seq_len=64,
-        h_dim=128,
-        n_layers=3,
-        dropout=0.4,
-        learn_rate=0.002,
-        lr_sched_factor=0.1,
-        lr_sched_patience=0.5,
-
+        seq_len=16,
+        h_dim=1024,
+        n_layers=2,
+        dropout=0.25,
+        learn_rate=0.001,
+        lr_sched_factor=0.5,
+        lr_sched_patience=4,
     )
     # ========================
     return hypers
@@ -42,7 +41,8 @@ def part1_generation_params():
     temperature = 0.0001
     # TODO: Tweak the parameters to generate a literary masterpiece.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    start_seq = "The sun went down"
+    temperature = 0.4
     # ========================
     return start_seq, temperature
 
