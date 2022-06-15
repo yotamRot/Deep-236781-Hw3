@@ -19,14 +19,10 @@ class EncoderCNN(nn.Module):
         #  use pooling or only strides, use any activation functions,
         #  use BN or Dropout, etc.
         # ====== YOUR CODE: ======
-        # According to auto-encoding beyond pixels using a learned similarity metric
-        channels = [in_channels, 64, 128, 256, out_channels]
+        channels = [in_channels, 32, 64, 128, out_channels]
         kernel_size = 5
-        padding = 2
-        stride = 1
         for in_c, out_c in zip(channels[:-1], channels[1:]):
-            modules.append(nn.Conv2d(in_c, out_c, kernel_size=kernel_size, padding=padding,
-                                     stride=stride, bias=False))
+            modules.append(nn.Conv2d(in_c, out_c, kernel_size=kernel_size , bias=False))
             modules.append(nn.BatchNorm2d(out_c))
             modules.append(nn.ReLU())
         # ========================
@@ -51,13 +47,10 @@ class DecoderCNN(nn.Module):
         #  output should be a batch of images, with same dimensions as the
         #  inputs to the Encoder were.
         # ====== YOUR CODE: ======
-        channels = [in_channels, 256, 128, 64, out_channels]
+        channels = [in_channels, 128, 64, 32, out_channels]
         kernel_size = 5
-        padding = 2
-        stride = 1
         for in_c, out_c in zip(channels[:-1], channels[1:]):
-            modules.append(nn.ConvTranspose2d(in_c, out_c, kernel_size=kernel_size, padding=padding,
-                                              stride=stride, bias=False))
+            modules.append(nn.ConvTranspose2d(in_c, out_c, kernel_size=kernel_size, bias=False))
             if out_c != out_channels:
                 modules.append(nn.BatchNorm2d(out_c))
                 modules.append(nn.ReLU())
