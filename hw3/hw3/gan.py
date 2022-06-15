@@ -186,8 +186,8 @@ def generator_loss_fn(y_generated, data_label=0):
     #  Think about what you need to compare the input to, in order to
     #  formulate the loss in terms of Binary Cross Entropy.
     # ====== YOUR CODE: ======
-    device =y_data.device
-    y_hat = torch.full(y_generated.shape, data_label, device=device)
+    device =y_generated.device
+    y_hat = torch.full(y_generated.shape, data_label, device=device, dtype=y_generated.dtype)
     loss_func = nn.BCEWithLogitsLoss()
     loss = loss_func(y_generated, y_hat)
     # ========================
