@@ -207,7 +207,7 @@ def part3_gan_hyperparams():
         discriminator_optimizer=dict(
             type="Adam",  # Any name in nn.optim like SGD, Adam
             lr=0.0004,
-            betas = (0.5,0.9)
+            betas = (0.5,0.999)
             # You an add extra args for the optimizer here
         ),
         generator_optimizer=dict(

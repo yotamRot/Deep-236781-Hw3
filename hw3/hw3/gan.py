@@ -91,7 +91,7 @@ class Generator(nn.Module):
                 layers.append(nn.ConvTranspose2d(in_c, out_c, kernel_size=in_kernel_size, stride=in_stride, padding=in_padding, bias=False))
             else:
                 layers.append(nn.ConvTranspose2d(in_c, out_c, kernel_size=kernel_size, stride=stride, padding=padding, bias=False))
-            if i != (len(channels)-1):
+            if i != (len(channels)-2):
                 layers.append(nn.BatchNorm2d(out_c))
                 layers.append(nn.ReLU())
             else:
@@ -155,13 +155,12 @@ def discriminator_loss_fn(y_data, y_generated, data_label=0, label_noise=0.0):
     #  generated labels.
     #  See pytorch's BCEWithLogitsLoss for a numerically stable implementation.
     # ====== YOUR CODE: ======
-    device =y_data.device
-    min_val = data_label - (label_noise * 0.5)
-    max_val = data_label + (label_noise * 0.5)
-    data_noise = torch.FloatTensor(y_data.shape, device=device).uniform_(min_val, max_val)
-    min_val =  1 - data_label - label_noise * 0.5
-    max_val = 1 - data_label + label_noise * 0.5
-    generated_noise = torch.FloatTensor(y_data.shape, device=device).uniform_(min_val, max_val)
+    data_noise = label_noise * torch.rand_like(y_data) - ((label_noise * 0.5) - data_label)
+
+    generated_noise =  label_noise * torch.rand_like(y_data) - ((label_noise * 0.5 - 1) + data_label)
+    
+    data_noise.to(y_data.device)
+    generated_noise.to(y_generated.device)
     
     loss_func = nn.BCEWithLogitsLoss()
     loss_data = loss_func(y_data, data_noise)
@@ -221,8 +220,8 @@ def train_batch(
     generated_scores = dsc_model(generated)
     data_scores = dsc_model(x_data)
     
-    loss_desc = dsc_loss_fn(generated_scores, data_scores)
-    loss_desc.backward()
+    dsc_loss = dsc_loss_fn(data_scores, generated_scores)
+    dsc_loss.backward()
     # update weights
     dsc_optimizer.step()
     # ========================
@@ -234,11 +233,11 @@ def train_batch(
     # ====== YOUR CODE: ======
     gen_optimizer.zero_grad()
     
-    generated = dsc_model.sample(x_data.shape[0], with_grad=True)
+    generated = gen_model.sample(x_data.shape[0], with_grad=True)
+    generated_scores = dsc_model(generated)
     
-    
-    loss_gen = gen_loss_fn(generated)
-    loss_gen.backward()
+    gen_loss = gen_loss_fn(generated_scores)
+    gen_loss.backward()
     # update weights
     gen_optimizer.step()
     # ========================
