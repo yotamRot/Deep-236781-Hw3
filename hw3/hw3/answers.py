@@ -50,53 +50,32 @@ def part1_generation_params():
 part1_q1 = r"""
 **Your answer:**
 
+We split into sequence because of the following reasons:
+1. Since the corpus might be very large then including all data and RNN network information will not fit in memory. Therfore splitting into sequences will    make the RNN network smaller and require less data avialble in RAM so it will prevent this issue.
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+2. If we train on entire corpus it will cause our RNN network to be very deep. Therfore it might cause vanishing gradient issue that will make our model untrainable.
+
 
 """
 
 part1_q2 = r"""
 **Your answer:**
 
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+The model is able to show longer memory because output also depends on hidden state. Those hidden states are effected by previous batches 
+and therfore since current model output is also affected by them it can produce out with longer memory then sequence len.
 
 """
 
 part1_q3 = r"""
 **Your answer:**
-
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+As mentioned before since each batch depends on hidden state created by previous batches, The order of batches is importent. 
+Therfore shuffeling the batches will defect the content that is given from the corpus sentence order and the relation between consecutive batches which is expressed in hidden state.
 """
 
 part1_q4 = r"""
 **Your answer:**
-
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+1. The temperture hyper parameter help us to control the variance of distribution created by sofmax --- TODO MORE 
+2. As we have seen in the graph above, When temperature increase we get distributdion that is closer to uniform. Threfore we are getting closer to random choose of next char because all choises have almost the same probality. So what we have learn has no effect and it will defect learning prcoess.
 """
 # ==============
 
