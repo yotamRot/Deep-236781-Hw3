@@ -74,8 +74,11 @@ Therfore shuffeling the batches will defect the content that is given from the c
 
 part1_q4 = r"""
 **Your answer:**
-1. The temperture hyper parameter help us to control the variance of distribution created by sofmax --- TODO MORE 
-2. As we have seen in the graph above, When temperature increase we get distributdion that is closer to uniform. Threfore we are getting closer to random choose of next char because all choises have almost the same probality. So what we have learn has no effect and it will defect learning prcoess.
+1. The temperture hyper parameter help us to control the variance of distribution created by sofmax. High values
+gives small variance and more uniform distribution. Therefore when we take temperture lower then 1.0 we can get more 
+probability to higher scored predictions (in the training) and from then get less uniform. 
+2. As we have seen in the graph above, when temperature increase we get distributdion that is closer to uniform. Threfore we are getting closer to random choose of next char because all choises have almost the same probality. So what we have learn has no effect and it will defect learning prcoess.
+3. As we have seen in the graph above, when temperature over decrease our probablilty model created by the softmax will be degenerated and only the highest score predictions will be choosen since its probability is close to 1.
 """
 # ==============
 
@@ -101,53 +104,34 @@ def part2_vae_hyperparams():
 
 part2_q1 = r"""
 **Your answer:**
-
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+$\sigma^2$ hyperparameter as implicit from its name control the variance of the output.
+High values will give images that are more similar to each other, and low values will produce diversed images( different Boshes).
+Also we can see from the loss function that $\sigma^2$ control how much weight we give to the reconstruction against the KL divergence.
 """
 
 part2_q2 = r"""
 **Your answer:**
+1. Lets start with the reconstruction loss, its purpose to minimize the difference between the input and the output that was constructed by the encoder-decoder.
+Now the second term the KL divergence is used to control the diversity of the outputs that produce by the model (As we will explain in 2).
+2. The KL divergence is a regulization term that tries to minize how prior and post prior distributions are diffrent from each other and this way control the decoder output which is the latent space distribution model.
+Therfore it controls how diversed are our sampels from latent space and how much it is close to normal distibution.
 
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+3. The benefit of this effect is that it tries to make the model more simple and this way we will avoid overfitting
+(Which may occur in very complex function) and get better result in mapping output point to their latent space    coordinates.
 
 """
 
 part2_q3 = r"""
 **Your answer:**
-
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+First we have to remember that in this model we want to create output that is simillar to the input after reconstruction.
+Therefore by maximizing P(X) we can get output distribution that is closer to the input image distribution in the data-set.
 
 """
 
 part2_q4 = r"""
 **Your answer:**
-
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+We are using log becuase it bring stability and ease of training. We know that sigma is very small number, therefore the optimaizer has to work with very small numbers whice cause to poorly gradient and numerical instabilities.
+When using log if we take for exaple sigma in range [0,1] we map it to [-inf,0] and that gives us more space to work with.
 
 """
 
