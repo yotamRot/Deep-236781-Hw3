@@ -21,7 +21,7 @@ class Discriminator(nn.Module):
         #  flatten the features.
         # ====== YOUR CODE: ======
         in_channel = in_size[0]
-        channels = [in_channel, 64, 128, 256, 512]
+        channels = [in_channel, 128, 256, 512, 512]
         kernel_size = 4
         stride = 2
         padding = 1
@@ -74,7 +74,7 @@ class Generator(nn.Module):
         #  You can assume a fixed image size.
         # ====== YOUR CODE: ======
         self.featuremap_size = featuremap_size
-        channels = [z_dim, 512, 256, 128, 64, out_channels]
+        channels = [z_dim, 512, 512, 256, 128, out_channels]
         
         in_kernel_size = featuremap_size
         in_stride = 1
@@ -215,7 +215,7 @@ def train_batch(
     # ====== YOUR CODE: ======
     dsc_optimizer.zero_grad()
     
-    generated = gen_model.sample(x_data.shape[0], with_grad=True)
+    generated = gen_model.sample(x_data.shape[0])
     
     generated_scores = dsc_model(generated)
     data_scores = dsc_model(x_data)
@@ -262,7 +262,11 @@ def save_checkpoint(gen_model, dsc_losses, gen_losses, checkpoint_file):
     #  You should decide what logic to use for deciding when to save.
     #  If you save, set saved to True.
     # ====== YOUR CODE: ======
-    if min(dsc_losses) == gen_losses[-1] or min(dsc_losses) == dsc_losses[-1]:
+    image_loss_sum = 0.2*gen_losses[-1] + 0.8*dsc_losses[-1]
+    new_gen = [e * 0.2 for e in gen_losses]
+    new_dsc = [e * 0.8 for e in dsc_losses]
+    sum_list = [sum(e) for e in zip(new_gen, new_dsc)]
+    if image_loss_sum != min(sum_list):
         saved =True
         torch.save(gen_model , checkpoint_file)
     # ========================

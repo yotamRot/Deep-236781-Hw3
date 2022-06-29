@@ -164,19 +164,19 @@ def part3_gan_hyperparams():
     # ====== YOUR CODE: ======
     hypers = dict(
         batch_size=64,
-        z_dim=128,
-        data_label=0.0,
-        label_noise=0.25,
+        z_dim=16,
+        data_label=1,
+        label_noise=0.1,
         discriminator_optimizer=dict(
             type="Adam",  # Any name in nn.optim like SGD, Adam
-            lr=0.0004,
+            lr=0.0003,
             betas = (0.5,0.999)
             # You an add extra args for the optimizer here
         ),
         generator_optimizer=dict(
              type="Adam",  # Any name in nn.optim like SGD, Adam
-            lr=0.0004,
-            betas = (0.5,0.9)
+            lr=0.0003,
+            betas = (0.5,0.999)
             # You an add extra args for the optimizer here
         ),
     )
