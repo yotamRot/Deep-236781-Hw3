@@ -155,15 +155,14 @@ def discriminator_loss_fn(y_data, y_generated, data_label=0, label_noise=0.0):
     #  generated labels.
     #  See pytorch's BCEWithLogitsLoss for a numerically stable implementation.
     # ====== YOUR CODE: ======
+	loss_func = nn.BCEWithLogitsLoss()
+	
     data_noise = label_noise * torch.rand_like(y_data) - ((label_noise * 0.5) - data_label)
-
+	data_noise.to(y_data.device)
+	loss_data = loss_func(y_data, data_noise)
+	
     generated_noise =  label_noise * torch.rand_like(y_data) - ((label_noise * 0.5 - 1) + data_label)
-    
-    data_noise.to(y_data.device)
     generated_noise.to(y_generated.device)
-    
-    loss_func = nn.BCEWithLogitsLoss()
-    loss_data = loss_func(y_data, data_noise)
     loss_generated =  loss_func(y_generated, generated_noise)
     # ========================
     return loss_data + loss_generated

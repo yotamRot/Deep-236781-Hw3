@@ -24,13 +24,13 @@ def part1_rnn_hyperparams():
     # ====== YOUR CODE: ======
     hypers = dict(
         batch_size=512,
-        seq_len=16,
+        seq_len=64,
         h_dim=1024,
-        n_layers=2,
-        dropout=0.25,
+        n_layers=3,
+        dropout=0.3,
         learn_rate=0.001,
-        lr_sched_factor=0.5,
-        lr_sched_patience=4,
+        lr_sched_factor=0.45,
+        lr_sched_patience=3,
     )
     # ========================
     return hypers
@@ -96,7 +96,7 @@ def part2_vae_hyperparams():
     # TODO: Tweak the hyperparameters to generate a former president.
     # ====== YOUR CODE: ======
     hypers = dict(
-        batch_size=16, h_dim=128, z_dim=16, x_sigma2=0.001, learn_rate=0.0001, betas=(0.9, 0.99),
+        batch_size=16, h_dim=64, z_dim=32, x_sigma2=0.001, learn_rate=0.0001, betas=(0.9, 0.999),
     )
     # ========================
     return hypers
