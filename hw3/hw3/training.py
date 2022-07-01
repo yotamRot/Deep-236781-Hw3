@@ -276,15 +276,15 @@ class RNNTrainer(Trainer):
         layer_output, self.hidden_state = self.model(x, self.hidden_state)  # layer_output.shape = (B, S, O)
         self.optimizer.zero_grad()
         # Calculate total loss over sequence
-        layer_output = torch.transpose(layer_output, 1, 2)  # layer_output.shape = (B, O, S)
-        loss = self.loss_fn(layer_output, y)
+        layer_output_T = torch.transpose(layer_output, 1, 2)  # layer_output.shape = (B, O, S)
+        loss = self.loss_fn(layer_output_T, y)
         # Backward pass: truncated back-propagation through time
         loss.backward()
         # Update params
         self.optimizer.step()
         self.hidden_state = self.hidden_state.detach()
         # Calculate number of correct char predictions
-        char_pred = torch.argmax(layer_output, dim=1)
+        char_pred = torch.argmax(layer_output_T, dim=1)
         num_correct = ((y == char_pred).sum())
         # ========================
 
@@ -308,11 +308,11 @@ class RNNTrainer(Trainer):
             # Forward pass
             layer_output, self.hidden_state = self.model(x, self.hidden_state)  # layer_output.shape = (B, S, O)
             # Loss calculation
-            layer_output = torch.transpose(layer_output, 1, 2)  # layer_output.shape = (B, O, S)
-            loss = self.loss_fn(layer_output, y)
+            layer_output_T = torch.transpose(layer_output, 1, 2)  # layer_output.shape = (B, O, S)
+            loss = self.loss_fn(layer_output_T, y)
 
             # Calculate number of correct predictions
-            char_pred = torch.argmax(layer_output, dim=1)
+            char_pred = torch.argmax(layer_output_T, dim=1)
             num_correct = ((y == char_pred).sum())
             # ========================
 
