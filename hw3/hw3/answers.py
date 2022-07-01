@@ -184,7 +184,7 @@ def part3_gan_hyperparams():
         batch_size=64,
         z_dim=16,
         data_label=1,
-        label_noise=0.1,
+        label_noise=0.25,
         discriminator_optimizer=dict(
             type="Adam",  # Any name in nn.optim like SGD, Adam
             lr=0.0003,
