@@ -239,9 +239,9 @@ part3_q2 = r"""
 
 part3_q3 = r"""
 **Your answer:**
-In output images main difference between GAN and VAE is that Vae produced smoother images but blurrier images.
-Reason for it loss function is more simple and trained on real images that are smooth. Therefore generated images 
-are less complex which makes the smoother.
+In output images main difference between GAN and VAE is that VAE produced smoother images but blurrier images.
+Reason for that is that the loss function is more simple and trained on real images that are smooth. 
+Therefore generated images are less complex which makes the smoother.
 On the other hand Gan model is much more complex (Based on generator and discriminator) , i.e. it 
 can represent much more complex models/functions and therefore it can create much complex images
 that might look more complex but less smooth and more noisy.
